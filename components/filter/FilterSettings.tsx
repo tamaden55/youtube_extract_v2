@@ -5,6 +5,8 @@ import type { FilterMode } from '@/types/youtube'
 interface FilterSettingsProps {
     currentMode: FilterMode
     onModeChange: (mode: FilterMode) => void
+    excludeShorts: boolean
+    onExcludeShortsChange: (exclude: boolean) => void
 }
 
 const FILTER_PRESETS = {
@@ -30,13 +32,18 @@ const FILTER_PRESETS = {
     },
 } as const
 
-export default function FilterSettings({ currentMode, onModeChange }: FilterSettingsProps) {
+export default function FilterSettings({
+    currentMode,
+    onModeChange,
+    excludeShorts,
+    onExcludeShortsChange
+}: FilterSettingsProps) {
     return (
         <div className="w-full max-w-2xl">
             <div className="mb-3">
                 <h3 className="text-sm font-medium text-gray-300">フィルター設定</h3>
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-3 mb-4">
                 {(Object.keys(FILTER_PRESETS) as FilterMode[]).map((mode) => {
                     const preset = FILTER_PRESETS[mode]
                     const isActive = currentMode === mode
@@ -60,6 +67,23 @@ export default function FilterSettings({ currentMode, onModeChange }: FilterSett
                         </button>
                     )
                 })}
+            </div>
+
+            {/* ショート動画除外チェックボックス */}
+            <div className="flex items-center gap-3 px-4 py-3 bg-gray-800 border-2 border-gray-600 rounded-lg">
+                <input
+                    type="checkbox"
+                    id="exclude-shorts"
+                    checked={excludeShorts}
+                    onChange={(e) => onExcludeShortsChange(e.target.checked)}
+                    className="w-5 h-5 rounded border-gray-500 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800 cursor-pointer"
+                />
+                <label
+                    htmlFor="exclude-shorts"
+                    className="text-gray-300 font-medium cursor-pointer flex-1"
+                >
+                    ショート動画を除外（60秒以下）
+                </label>
             </div>
         </div>
     )

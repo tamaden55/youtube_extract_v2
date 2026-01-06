@@ -3,6 +3,36 @@ import type { VideoInfo, SearchParams, YouTubeSearchResponse, YouTubeAPIError, C
 const YOUTUBE_API_BASE_URL = 'https://www.googleapis.com/youtube/v3'
 
 /**
+ * ISO 8601形式のduration文字列を秒数に変換
+ * @param duration ISO 8601形式の文字列（例: PT59S, PT1M30S, PT1H2M3S）
+ * @returns 秒数（数値）、パース失敗時は0
+ *
+ * @example
+ * parseDuration('PT59S') // => 59
+ * parseDuration('PT1M30S') // => 90
+ * parseDuration('PT1H2M3S') // => 3723
+ */
+export function parseDuration(duration: string): number {
+    if (!duration || !duration.startsWith('PT')) {
+        return 0
+    }
+
+    const matches = duration
+        .slice(2) // 'PT' を除去
+        .match(/(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/)
+
+    if (!matches) {
+        return 0
+    }
+
+    const hours = parseInt(matches[1] || '0', 10)
+    const minutes = parseInt(matches[2] || '0', 10)
+    const seconds = parseInt(matches[3] || '0', 10)
+
+    return hours * 3600 + minutes * 60 + seconds
+}
+
+/**
  * YouTube動画検索
  * @param params 検索パラメータ
  * @returns VideoInfo配列
@@ -56,6 +86,42 @@ export async function searchVideos(params: SearchParams): Promise<VideoInfo[]> {
             thumbnailUrl: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default.url,
         }))
 
+        // Videos API で contentDetails.duration を取得
+        if (videos.length > 0) {
+            try {
+                const videoIds = videos.map(v => v.videoId).join(',')
+                const videosParams = new URLSearchParams({
+                    part: 'contentDetails',
+                    id: videoIds,
+                    key: apiKey,
+                })
+
+                const videosUrl = `${YOUTUBE_API_BASE_URL}/videos?${videosParams.toString()}`
+                const videosResponse = await fetch(videosUrl)
+
+                if (videosResponse.ok) {
+                    const videosData: YouTubeVideosResponse = await videosResponse.json()
+
+                    // duration情報をマップ化
+                    const durationMap = new Map<string, number>()
+                    videosData.items.forEach((item) => {
+                        const duration = parseDuration(item.contentDetails.duration)
+                        durationMap.set(item.id, duration)
+                    })
+
+                    // VideoInfo配列に duration を追加
+                    videos.forEach(video => {
+                        video.duration = durationMap.get(video.videoId) || 0
+                    })
+                } else {
+                    console.warn('Failed to fetch video durations, continuing without duration data')
+                }
+            } catch (error) {
+                console.error('Error fetching video durations:', error)
+                // duration取得失敗時もエラーにせず続行（durationはoptionalのため）
+            }
+        }
+
         return videos
     } catch (error) {
         if (error instanceof Error) {
@@ -81,6 +147,28 @@ export function getVideoUrl(videoId: string): string {
  */
 export function getChannelUrl(channelId: string): string {
     return `https://www.youtube.com/channel/${channelId}`
+}
+
+/**
+ * YouTube Data API v3 Videos レスポンス型
+ * videos.list エンドポイントのレスポンス（contentDetails取得用）
+ */
+interface YouTubeVideosResponse {
+    kind: string
+    etag: string
+    items: Array<{
+        kind: string
+        etag: string
+        id: string
+        contentDetails: {
+            duration: string  // ISO 8601形式（例: PT1M30S）
+            dimension: string
+            definition: string
+            caption: string
+            licensedContent: boolean
+            projection: string
+        }
+    }>
 }
 
 /**

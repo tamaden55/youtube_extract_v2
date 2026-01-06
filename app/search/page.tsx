@@ -16,6 +16,7 @@ export default function SearchPage() {
     const [channelStats, setChannelStats] = useState<ChannelStats[]>([])
     const [whitelistChannelIds, setWhitelistChannelIds] = useState<string[]>([])
     const [filterMode, setFilterMode] = useState<FilterMode>('none')
+    const [excludeShorts, setExcludeShorts] = useState<boolean>(false)
     const [isLoading, setIsLoading] = useState(false)
     const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false)
     const [error, setError] = useState<string | null>(null)
@@ -86,11 +87,11 @@ export default function SearchPage() {
         }
     }
 
-    // フィルターモードが変更されたら再フィルタリング
+    // フィルターモードまたはexcludeShortsが変更されたら再フィルタリング
     useEffect(() => {
-        const filtered = filterVideos(videos, channelStats, filterMode, whitelistChannelIds)
+        const filtered = filterVideos(videos, channelStats, filterMode, whitelistChannelIds, excludeShorts)
         setFilteredVideos(filtered)
-    }, [videos, channelStats, filterMode, whitelistChannelIds])
+    }, [videos, channelStats, filterMode, whitelistChannelIds, excludeShorts])
 
     // プレイリスト作成ハンドラー
     const handleCreatePlaylist = async (selectedVideos: VideoInfo[]) => {
@@ -203,7 +204,12 @@ export default function SearchPage() {
                 {/* フィルター設定 */}
                 {videos.length > 0 && (
                     <div className="flex justify-center mb-8">
-                        <FilterSettings currentMode={filterMode} onModeChange={setFilterMode} />
+                        <FilterSettings
+                            currentMode={filterMode}
+                            onModeChange={setFilterMode}
+                            excludeShorts={excludeShorts}
+                            onExcludeShortsChange={setExcludeShorts}
+                        />
                     </div>
                 )}
 

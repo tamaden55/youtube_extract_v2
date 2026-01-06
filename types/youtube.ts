@@ -12,6 +12,7 @@ export interface VideoInfo {
     publishedAt: string
     description: string
     thumbnailUrl: string
+    duration?: number  // 動画の長さ（秒）- Phase 5: Videos APIから取得
 }
 
 /**
