@@ -65,7 +65,7 @@ interface ChannelStats {
 
 ### FilterPreset
 ```typescript
-type FilterMode = 'strict' | 'moderate' | 'none'
+type FilterMode = 'whitelist' | 'strict' | 'moderate' | 'none'
 
 interface FilterPreset {
   mode: FilterMode
@@ -73,6 +73,37 @@ interface FilterPreset {
   minVideoCount?: number
   excludeKeywords?: string[]
 }
+```
+
+### WhitelistChannel
+```typescript
+interface WhitelistChannel {
+  id: string
+  channel_id: string
+  channel_name: string
+  category: string | null
+  subscriber_count: number | null
+  created_at: string
+  updated_at: string
+}
+```
+
+## Supabase データベース設計
+
+### whitelist_channels テーブル
+```sql
+CREATE TABLE whitelist_channels (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  channel_id TEXT UNIQUE NOT NULL,
+  channel_name TEXT NOT NULL,
+  category TEXT,
+  subscriber_count INTEGER,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_whitelist_channel_id ON whitelist_channels(channel_id);
+CREATE INDEX idx_whitelist_category ON whitelist_channels(category);
 ```
 
 ## API設計
@@ -88,3 +119,20 @@ interface FilterPreset {
 ### POST /api/youtube/playlist
 - Body: `{ title, description, videoIds[] }`
 - Response: `{ playlistId, url }`
+
+### GET /api/whitelist
+- Query: `category` (optional)
+- Response: `{ success: boolean, channels: WhitelistChannel[], count: number }`
+
+### POST /api/whitelist
+- Body: `{ channel_id, channel_name, category?, subscriber_count? }`
+- Response: `{ success: boolean, channel: WhitelistChannel }`
+
+### DELETE /api/whitelist/[id]
+- Params: `id` (UUID)
+- Response: `{ success: boolean, message: string }`
+
+### GET /api/youtube/channel-lookup
+- Query: `input` (チャンネルURL、ハンドル名、またはチャンネルID)
+- Response: `{ channelId: string, channelName: string, subscriberCount: number }`
+- 用途: チャンネルURL（@username形式など）からチャンネルIDを自動取得

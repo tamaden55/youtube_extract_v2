@@ -100,11 +100,12 @@ export interface ChannelStats {
 
 /**
  * フィルターモード
+ * whitelist: ホワイトリストのみ表示
  * strict: 厳格（高い基準でフィルタリング）
  * moderate: 中程度（バランスの取れたフィルタリング）
  * none: なし（フィルタリングしない）
  */
-export type FilterMode = 'strict' | 'moderate' | 'none'
+export type FilterMode = 'whitelist' | 'strict' | 'moderate' | 'none'
 
 /**
  * フィルタープリセット
@@ -115,4 +116,18 @@ export interface FilterPreset {
     minSubscribers?: number
     minVideoCount?: number
     excludeKeywords?: string[]
+}
+
+/**
+ * ホワイトリストチャンネル
+ * Supabaseに保存される信頼できるチャンネルの情報
+ */
+export interface WhitelistChannel {
+    id: string
+    channel_id: string
+    channel_name: string
+    category: string | null
+    subscriber_count: number | null
+    created_at: string
+    updated_at: string
 }

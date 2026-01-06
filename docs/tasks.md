@@ -35,9 +35,20 @@ GitHub Issuesと連携して進捗を追跡します。
 **実装ブランチ**: `feature/phase3-playlist`
 **次のステップ**: PRを作成して`dev`にマージ
 
-## Phase 4: ホワイトリスト管理 (#4)
-- [ ] Supabaseセットアップ
-- [ ] データベーススキーマ設計
-- [ ] ホワイトリストCRUD API
-- [ ] チャンネル検索・追加UI
-- [ ] カテゴリ管理機能
+## Phase 4: ホワイトリスト管理 (#4) 🚧 進行中
+- [x] Supabaseセットアップ
+- [x] データベーススキーマ設計
+- [x] ホワイトリストCRUD API実装
+  - [x] GET /api/whitelist (取得)
+  - [x] POST /api/whitelist (追加)
+  - [x] DELETE /api/whitelist/[id] (削除)
+- [x] ホワイトリスト管理ページ作成 (`/app/whitelist/page.tsx`)
+- [x] ホワイトリスト管理UIコンポーネント
+- [x] 検索ページへのホワイトリスト統合
+- [x] ホワイトリストフィルターモード実装
+- [ ] チャンネルURL/ハンドル名からID自動取得機能
+  - [ ] API実装 (`/api/youtube/channel-lookup`)
+  - [ ] UI改善（URL入力対応）
+
+**実装ブランチ**: `feature/phase4-whitelist`（作成予定）
+**次のステップ**: チャンネルID自動取得機能の実装

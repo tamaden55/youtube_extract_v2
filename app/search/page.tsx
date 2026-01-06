@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import SearchForm from '@/components/search/SearchForm'
 import FilterSettings from '@/components/filter/FilterSettings'
@@ -13,11 +14,29 @@ export default function SearchPage() {
     const [videos, setVideos] = useState<VideoInfo[]>([])
     const [filteredVideos, setFilteredVideos] = useState<VideoInfo[]>([])
     const [channelStats, setChannelStats] = useState<ChannelStats[]>([])
+    const [whitelistChannelIds, setWhitelistChannelIds] = useState<string[]>([])
     const [filterMode, setFilterMode] = useState<FilterMode>('none')
     const [isLoading, setIsLoading] = useState(false)
     const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
+
+    // ホワイトリストを取得
+    useEffect(() => {
+        const fetchWhitelist = async () => {
+            try {
+                const response = await fetch('/api/whitelist')
+                const data = await response.json()
+                if (response.ok && data.channels) {
+                    const channelIds = data.channels.map((ch: any) => ch.channel_id)
+                    setWhitelistChannelIds(channelIds)
+                }
+            } catch (err) {
+                console.error('Failed to fetch whitelist:', err)
+            }
+        }
+        fetchWhitelist()
+    }, [])
 
     const handleSearch = async (query: string) => {
         setIsLoading(true)
@@ -69,9 +88,9 @@ export default function SearchPage() {
 
     // フィルターモードが変更されたら再フィルタリング
     useEffect(() => {
-        const filtered = filterVideos(videos, channelStats, filterMode)
+        const filtered = filterVideos(videos, channelStats, filterMode, whitelistChannelIds)
         setFilteredVideos(filtered)
-    }, [videos, channelStats, filterMode])
+    }, [videos, channelStats, filterMode, whitelistChannelIds])
 
     // プレイリスト作成ハンドラー
     const handleCreatePlaylist = async (selectedVideos: VideoInfo[]) => {
@@ -118,27 +137,35 @@ export default function SearchPage() {
             <div className="container mx-auto px-4 py-8">
                 {/* ヘッダー */}
                 <div className="text-center mb-8">
-                    <div className="flex justify-end mb-4">
-                        {session ? (
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-gray-300">
-                                    {session.user?.email}
-                                </span>
+                    <div className="flex justify-between items-center mb-4">
+                        <Link
+                            href="/whitelist"
+                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                            ホワイトリスト管理
+                        </Link>
+                        <div className="flex items-center gap-4">
+                            {session ? (
+                                <>
+                                    <span className="text-sm text-gray-300">
+                                        {session.user?.email}
+                                    </span>
+                                    <button
+                                        onClick={() => signOut()}
+                                        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                                    >
+                                        ログアウト
+                                    </button>
+                                </>
+                            ) : (
                                 <button
-                                    onClick={() => signOut()}
-                                    className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                                    onClick={() => signIn('google')}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                 >
-                                    ログアウト
+                                    Googleでログイン
                                 </button>
-                            </div>
-                        ) : (
-                            <button
-                                onClick={() => signIn('google')}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                Googleでログイン
-                            </button>
-                        )}
+                            )}
+                        </div>
                     </div>
                     <h1 className="text-4xl font-bold text-white mb-2">
                         YouTube Extract v2

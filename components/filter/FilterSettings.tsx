@@ -13,6 +13,11 @@ const FILTER_PRESETS = {
         description: 'フィルタリングしない',
         color: 'bg-gray-600',
     },
+    whitelist: {
+        label: 'ホワイトリスト',
+        description: '登録済みチャンネルのみ',
+        color: 'bg-green-600',
+    },
     moderate: {
         label: '中程度',
         description: '登録者数 10,000人以上',

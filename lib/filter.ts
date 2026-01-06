@@ -7,6 +7,9 @@ export const FILTER_PRESETS: Record<FilterMode, FilterPreset> = {
     none: {
         mode: 'none',
     },
+    whitelist: {
+        mode: 'whitelist',
+    },
     moderate: {
         mode: 'moderate',
         minSubscribers: 10000,
@@ -24,16 +27,27 @@ export const FILTER_PRESETS: Record<FilterMode, FilterPreset> = {
  * @param videos 動画リスト
  * @param channelStats チャンネル統計情報
  * @param filterMode フィルターモード
+ * @param whitelistChannelIds ホワイトリストチャンネルIDリスト
  * @returns フィルタリングされた動画リスト
  */
 export function filterVideos(
     videos: VideoInfo[],
     channelStats: ChannelStats[],
-    filterMode: FilterMode
+    filterMode: FilterMode,
+    whitelistChannelIds: string[] = []
 ): VideoInfo[] {
     // フィルターなしの場合はそのまま返す
     if (filterMode === 'none') {
         return videos
+    }
+
+    // ホワイトリストフィルター
+    if (filterMode === 'whitelist') {
+        if (whitelistChannelIds.length === 0) {
+            return []
+        }
+        const whitelistSet = new Set(whitelistChannelIds)
+        return videos.filter(video => whitelistSet.has(video.channelId))
     }
 
     const preset = FILTER_PRESETS[filterMode]
