@@ -1,12 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import SearchForm from '@/components/search/SearchForm'
 import VideoList from '@/components/search/VideoList'
-import type { VideoInfo } from '@/types/youtube'
+import FilterSettings from '@/components/filter/FilterSettings'
+import type { VideoInfo, ChannelStats, FilterMode } from '@/types/youtube'
+import { filterVideos, extractUniqueChannelIds } from '@/lib/filter'
 
 export default function SearchPage() {
     const [videos, setVideos] = useState<VideoInfo[]>([])
+    const [filteredVideos, setFilteredVideos] = useState<VideoInfo[]>([])
+    const [channelStats, setChannelStats] = useState<ChannelStats[]>([])
+    const [filterMode, setFilterMode] = useState<FilterMode>('none')
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -15,26 +20,54 @@ export default function SearchPage() {
         setError(null)
 
         try {
-            const params = new URLSearchParams({
+            // 動画検索
+            const searchParams = new URLSearchParams({
                 q: query,
                 maxResults: '50',
             })
 
-            const response = await fetch(`/api/youtube/search?${params.toString()}`)
-            const data = await response.json()
+            const searchResponse = await fetch(`/api/youtube/search?${searchParams.toString()}`)
+            const searchData = await searchResponse.json()
 
-            if (!response.ok) {
-                throw new Error(data.error || 'An error occurred')
+            if (!searchResponse.ok) {
+                throw new Error(searchData.error || 'An error occurred')
             }
 
-            setVideos(data.videos)
+            const searchedVideos: VideoInfo[] = searchData.videos
+            setVideos(searchedVideos)
+
+            // チャンネル統計情報を取得
+            const channelIds = extractUniqueChannelIds(searchedVideos)
+
+            if (channelIds.length > 0) {
+                const channelParams = new URLSearchParams({
+                    channelIds: channelIds.join(','),
+                })
+
+                const channelResponse = await fetch(`/api/youtube/channels?${channelParams.toString()}`)
+                const channelData = await channelResponse.json()
+
+                if (channelResponse.ok) {
+                    setChannelStats(channelData.channels)
+                } else {
+                    console.error('Failed to fetch channel stats:', channelData.error)
+                    setChannelStats([])
+                }
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unexpected error occurred')
             setVideos([])
+            setChannelStats([])
         } finally {
             setIsLoading(false)
         }
     }
+
+    // フィルターモードが変更されたら再フィルタリング
+    useEffect(() => {
+        const filtered = filterVideos(videos, channelStats, filterMode)
+        setFilteredVideos(filtered)
+    }, [videos, channelStats, filterMode])
 
     return (
         <div className="min-h-screen bg-gray-900">
@@ -53,6 +86,13 @@ export default function SearchPage() {
                 <div className="flex justify-center mb-8">
                     <SearchForm onSearch={handleSearch} isLoading={isLoading} />
                 </div>
+
+                {/* フィルター設定 */}
+                {videos.length > 0 && (
+                    <div className="flex justify-center mb-8">
+                        <FilterSettings currentMode={filterMode} onModeChange={setFilterMode} />
+                    </div>
+                )}
 
                 {/* エラー表示 */}
                 {error && (
@@ -74,9 +114,17 @@ export default function SearchPage() {
 
                 {/* 検索結果 */}
                 {!isLoading && videos.length > 0 && (
-                    <div className="flex justify-center">
-                        <VideoList videos={videos} />
-                    </div>
+                    <>
+                        <div className="max-w-4xl mx-auto mb-4">
+                            <p className="text-gray-400 text-sm">
+                                {filteredVideos.length} / {videos.length} 件の動画を表示中
+                                {filterMode !== 'none' && ` (${filterMode}フィルター適用中)`}
+                            </p>
+                        </div>
+                        <div className="flex justify-center">
+                            <VideoList videos={filteredVideos} />
+                        </div>
+                    </>
                 )}
 
                 {/* 初期状態のメッセージ */}
