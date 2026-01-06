@@ -75,38 +75,43 @@ export async function POST(request: NextRequest) {
         const playlistData = await playlistResponse.json()
         const playlistId = playlistData.id
 
-        // 2. 動画をプレイリストに追加
-        const addVideoPromises = videoIds.map(async (videoId) => {
-            const response = await fetch(
-                `${YOUTUBE_API_BASE_URL}/playlistItems?part=snippet`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${session.accessToken}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        snippet: {
-                            playlistId,
-                            resourceId: {
-                                kind: 'youtube#video',
-                                videoId,
-                            },
+        // 2. 動画をプレイリストに追加（順番に1つずつ）
+        const results = []
+        for (const videoId of videoIds) {
+            try {
+                const response = await fetch(
+                    `${YOUTUBE_API_BASE_URL}/playlistItems?part=snippet`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${session.accessToken}`,
+                            'Content-Type': 'application/json',
                         },
-                    }),
+                        body: JSON.stringify({
+                            snippet: {
+                                playlistId,
+                                resourceId: {
+                                    kind: 'youtube#video',
+                                    videoId,
+                                },
+                            },
+                        }),
+                    }
+                )
+
+                if (!response.ok) {
+                    const errorData = await response.json()
+                    console.error(`Failed to add video ${videoId}:`, errorData)
+                    results.push({ videoId, success: false, error: errorData })
+                } else {
+                    results.push({ videoId, success: true })
                 }
-            )
-
-            if (!response.ok) {
-                const errorData = await response.json()
-                console.error(`Failed to add video ${videoId}:`, errorData)
-                return { videoId, success: false, error: errorData }
+            } catch (error) {
+                console.error(`Error adding video ${videoId}:`, error)
+                results.push({ videoId, success: false, error })
             }
+        }
 
-            return { videoId, success: true }
-        })
-
-        const results = await Promise.all(addVideoPromises)
         const successCount = results.filter(r => r.success).length
 
         return NextResponse.json({
