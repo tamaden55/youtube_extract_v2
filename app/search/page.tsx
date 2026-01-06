@@ -139,6 +139,12 @@ export default function SearchPage() {
                 <div className="text-center mb-8">
                     <div className="flex justify-between items-center mb-4">
                         <Link
+                            href="/"
+                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        >
+                            ホームへ戻る
+                        </Link>
+                        <Link
                             href="/whitelist"
                             className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
                         >
@@ -168,10 +174,12 @@ export default function SearchPage() {
                         </div>
                     </div>
                     <h1 className="text-4xl font-bold text-white mb-2">
-                        YouTube Extract v2
+                        YouTube Playlist maker
                     </h1>
                     <p className="text-gray-300">
-                        YouTubeの動画を検索してプレイリストを作成
+                        使い方:
+                        1. キーワードでYouTube動画を検索
+                        2. 気に入った動画があれば、チェックをして「プレイリストを作成」ボタンを押す
                     </p>
                 </div>
 
