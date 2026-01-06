@@ -138,12 +138,12 @@ export default function SearchPage() {
                 {/* ヘッダー */}
                 <div className="text-center mb-8">
                     <div className="flex justify-between items-center mb-4">
-                        <Link
-                            href="/"
-                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
-                            ホームへ戻る
-                        </Link>
+                            新しい検索
+                        </button>
                         <Link
                             href="/whitelist"
                             className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
@@ -168,19 +168,31 @@ export default function SearchPage() {
                                     onClick={() => signIn('google')}
                                     className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                 >
-                                    Googleでログイン
+                                    ログイン
                                 </button>
                             )}
                         </div>
                     </div>
-                    <h1 className="text-4xl font-bold text-white mb-2">
+                    <h1 className="text-4xl font-bold text-white mb-4">
                         YouTube Playlist maker
                     </h1>
-                    <p className="text-gray-300">
-                        使い方:
-                        1. キーワードでYouTube動画を検索
-                        2. 気に入った動画があれば、チェックをして「プレイリストを作成」ボタンを押す
-                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl mx-auto mb-6">
+                        <div className="p-4 bg-gray-800 rounded-lg text-center">
+                            <div className="text-2xl mb-2">🔍</div>
+                            <p className="text-white font-semibold mb-1">1. 検索</p>
+                            <p className="text-sm text-gray-400">キーワード入力</p>
+                        </div>
+                        <div className="p-4 bg-gray-800 rounded-lg text-center">
+                            <div className="text-2xl mb-2">✅</div>
+                            <p className="text-white font-semibold mb-1">2. 選択</p>
+                            <p className="text-sm text-gray-400">動画にチェック</p>
+                        </div>
+                        <div className="p-4 bg-gray-800 rounded-lg text-center">
+                            <div className="text-2xl mb-2">📝</div>
+                            <p className="text-white font-semibold mb-1">3. 作成</p>
+                            <p className="text-sm text-gray-400">プレイリスト化</p>
+                        </div>
+                    </div>
                 </div>
 
                 {/* 検索フォーム */}
