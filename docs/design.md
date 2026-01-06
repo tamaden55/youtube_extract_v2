@@ -51,6 +51,7 @@ interface VideoInfo {
   publishedAt: string
   description: string
   thumbnailUrl: string
+  duration: string  // ISO 8601形式 (例: PT59S, PT1M30S) - Phase 5で追加
 }
 ```
 
@@ -72,6 +73,7 @@ interface FilterPreset {
   minSubscribers?: number
   minVideoCount?: number
   excludeKeywords?: string[]
+  excludeShorts?: boolean  // Phase 5: ショート動画（60秒以下）を除外
 }
 ```
 
@@ -110,7 +112,8 @@ CREATE INDEX idx_whitelist_category ON whitelist_channels(category);
 
 ### GET /api/youtube/search
 - Query: `q` (keyword), `maxResults`, `days`
-- Response: `VideoInfo[]`
+- Response: `VideoInfo[]` (Phase 5: duration フィールドを含む)
+- 実装: contentDetails.duration を取得して ISO 8601 形式で返す
 
 ### GET /api/youtube/channels
 - Query: `channelIds[]`
