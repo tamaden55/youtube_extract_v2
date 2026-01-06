@@ -118,7 +118,9 @@ CREATE INDEX idx_whitelist_category ON whitelist_channels(category);
 
 ### POST /api/youtube/playlist
 - Body: `{ title, description, videoIds[] }`
-- Response: `{ playlistId, url }`
+- Response: `{ playlistId, url, videosAdded, totalVideos, results }`
+- 実装: 動画を順番に1つずつ追加（YouTube API の競合を回避）
+- エラーハンドリング: 各動画の追加結果を個別に記録
 
 ### GET /api/whitelist
 - Query: `category` (optional)

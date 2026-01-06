@@ -2,10 +2,25 @@
 
 YouTube Data APIを使った動画検索・プレイリスト作成Webアプリケーション
 
+## 本番環境
+
+**Production URL**: https://youtube-extract-v2.vercel.app
+
+- **検索ページ**: https://youtube-extract-v2.vercel.app/search
+- **ホワイトリスト管理**: https://youtube-extract-v2.vercel.app/whitelist
+
 ## 概要
 
 既存のCLIツール [youtube_extract](https://github.com/your-username/youtube_extract) をNext.jsでWebアプリ化。
 グラフィカルでインタラクティブなUIで、YouTubeの動画検索、フィルタリング、プレイリスト作成を実現します。
+
+## 主な機能
+
+- YouTube動画のキーワード検索
+- チャンネル統計に基づくフィルタリング（strict/moderate/none）
+- ホワイトリストによる信頼できるチャンネル管理
+- Google OAuth認証によるプレイリスト作成
+- チャンネルURL/ハンドル名からの自動ID取得
 
 ## 技術スタック
 
@@ -14,6 +29,7 @@ YouTube Data APIを使った動画検索・プレイリスト作成Webアプリ�
 - **Styling**: Tailwind CSS
 - **Database**: Supabase
 - **Hosting**: Vercel
+- **Authentication**: NextAuth.js
 - **API**: YouTube Data API v3
 
 ## セットアップ
@@ -48,10 +64,11 @@ http://localhost:3000 でアクセス
 ## 開発フェーズ
 
 - [x] Phase 0: プロジェクトセットアップ
-- [ ] Phase 1: 基本的な動画検索機能
-- [ ] Phase 2: フィルタリング機能
-- [ ] Phase 3: プレイリスト作成機能
-- [ ] Phase 4: ホワイトリスト管理
+- [x] Phase 1: 基本的な動画検索機能
+- [x] Phase 2: フィルタリング機能
+- [x] Phase 3: プレイリスト作成機能
+- [x] Phase 4: ホワイトリスト管理
+- [x] Vercel本番デプロイ完了
 
 詳細は [docs/tasks.md](docs/tasks.md) を参照
 
