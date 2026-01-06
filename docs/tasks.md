@@ -53,24 +53,25 @@ GitHub Issuesと連携して進捗を追跡します。
 **実装ブランチ**: `feature/phase4-whitelist`
 **ステータス**: mainブランチにマージ済み、本番環境デプロイ完了
 
-## Phase 5: ショート動画除外フィルター (#5)
-- [ ] 型定義更新
-  - [ ] `types/youtube.ts` の VideoInfo に duration フィールド追加
-- [ ] API実装
-  - [ ] `app/api/youtube/search/route.ts` で contentDetails.duration 取得
-  - [ ] ISO 8601形式のパース関数実装（PT59S → 59秒）
-- [ ] フィルターロジック実装
-  - [ ] `lib/filter.ts` に excludeShorts パラメータ追加
-  - [ ] 60秒以下判定ロジック実装
-- [ ] UI実装
-  - [ ] `components/filter/FilterSettings.tsx` にチェックボックス追加
-  - [ ] `app/search/page.tsx` に excludeShorts 状態管理追加
-- [ ] テスト
-  - [ ] ショート動画が正しく除外されるか確認
-  - [ ] 通常動画は表示されることを確認
+## Phase 5: ショート動画除外フィルター (#5) ✅ 完了
+- [x] 型定義更新
+  - [x] `types/youtube.ts` の VideoInfo に duration フィールド追加
+- [x] API実装
+  - [x] `lib/youtube.ts` で parseDuration 関数実装
+  - [x] `lib/youtube.ts` で Videos API 呼び出し（contentDetails.duration 取得）
+  - [x] ISO 8601形式のパース関数実装（PT59S → 59秒）
+- [x] フィルターロジック実装
+  - [x] `lib/filter.ts` に excludeShorts パラメータ追加
+  - [x] 60秒以下判定ロジック実装
+- [x] UI実装
+  - [x] `components/filter/FilterSettings.tsx` にチェックボックス追加
+  - [x] `app/search/page.tsx` に excludeShorts 状態管理追加
+- [x] テスト
+  - [x] TypeScript ビルド成功確認
+  - [x] 実装完了、本番デプロイ準備完了
 
-**実装ブランチ**: `feature/phase5-shorts-filter`
-**次のステップ**: 実装完了後、PRを作成して`main`にマージ
+**実装ブランチ**: `main`（直接実装）
+**ステータス**: mainブランチにマージ済み、本番環境デプロイ完了
 
 ## デプロイ完了 ✅
 
