@@ -87,3 +87,32 @@ export interface YouTubeAPIError {
         }>
     }
 }
+
+/**
+ * チャンネル統計情報
+ * YouTube Data API v3 のチャンネル情報から抽出した統計データ
+ */
+export interface ChannelStats {
+    channelId: string
+    subscriberCount: number
+    videoCount: number
+}
+
+/**
+ * フィルターモード
+ * strict: 厳格（高い基準でフィルタリング）
+ * moderate: 中程度（バランスの取れたフィルタリング）
+ * none: なし（フィルタリングしない）
+ */
+export type FilterMode = 'strict' | 'moderate' | 'none'
+
+/**
+ * フィルタープリセット
+ * 検索結果をフィルタリングするための設定
+ */
+export interface FilterPreset {
+    mode: FilterMode
+    minSubscribers?: number
+    minVideoCount?: number
+    excludeKeywords?: string[]
+}

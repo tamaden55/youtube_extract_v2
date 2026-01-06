@@ -1,4 +1,4 @@
-import type { VideoInfo, SearchParams, YouTubeSearchResponse, YouTubeAPIError } from '@/types/youtube'
+import type { VideoInfo, SearchParams, YouTubeSearchResponse, YouTubeAPIError, ChannelStats } from '@/types/youtube'
 
 const YOUTUBE_API_BASE_URL = 'https://www.googleapis.com/youtube/v3'
 
@@ -81,4 +81,80 @@ export function getVideoUrl(videoId: string): string {
  */
 export function getChannelUrl(channelId: string): string {
     return `https://www.youtube.com/channel/${channelId}`
+}
+
+/**
+ * YouTube Data API v3 Channels レスポンス型
+ */
+interface YouTubeChannelsResponse {
+    kind: string
+    etag: string
+    pageInfo: {
+        totalResults: number
+        resultsPerPage: number
+    }
+    items: Array<{
+        kind: string
+        etag: string
+        id: string
+        statistics: {
+            viewCount: string
+            subscriberCount: string
+            hiddenSubscriberCount: boolean
+            videoCount: string
+        }
+    }>
+}
+
+/**
+ * チャンネル統計情報を取得
+ * @param channelIds チャンネルIDの配列
+ * @returns ChannelStats配列
+ */
+export async function getChannelStats(channelIds: string[]): Promise<ChannelStats[]> {
+    const apiKey = process.env.YOUTUBE_API_KEY
+
+    if (!apiKey) {
+        throw new Error('YOUTUBE_API_KEY is not set in environment variables')
+    }
+
+    if (channelIds.length === 0) {
+        return []
+    }
+
+    // YouTube API は最大50件まで一度に取得可能
+    const queryParams = new URLSearchParams({
+        part: 'statistics',
+        id: channelIds.join(','),
+        key: apiKey,
+    })
+
+    const url = `${YOUTUBE_API_BASE_URL}/channels?${queryParams.toString()}`
+
+    try {
+        const response = await fetch(url)
+
+        if (!response.ok) {
+            const errorData: YouTubeAPIError = await response.json()
+            throw new Error(
+                `YouTube API Error: ${errorData.error.message} (Code: ${errorData.error.code})`
+            )
+        }
+
+        const data: YouTubeChannelsResponse = await response.json()
+
+        // レスポンスをChannelStats型に変換
+        const channelStats: ChannelStats[] = data.items.map((item) => ({
+            channelId: item.id,
+            subscriberCount: parseInt(item.statistics.subscriberCount, 10),
+            videoCount: parseInt(item.statistics.videoCount, 10),
+        }))
+
+        return channelStats
+    } catch (error) {
+        if (error instanceof Error) {
+            throw error
+        }
+        throw new Error('Unknown error occurred while fetching channel statistics')
+    }
 }
