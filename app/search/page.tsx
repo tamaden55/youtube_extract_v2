@@ -1,19 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession, signIn, signOut } from 'next-auth/react'
 import SearchForm from '@/components/search/SearchForm'
-import VideoList from '@/components/search/VideoList'
 import FilterSettings from '@/components/filter/FilterSettings'
+import VideoSelection from '@/components/playlist/VideoSelection'
 import type { VideoInfo, ChannelStats, FilterMode } from '@/types/youtube'
 import { filterVideos, extractUniqueChannelIds } from '@/lib/filter'
 
 export default function SearchPage() {
+    const { data: session } = useSession()
     const [videos, setVideos] = useState<VideoInfo[]>([])
     const [filteredVideos, setFilteredVideos] = useState<VideoInfo[]>([])
     const [channelStats, setChannelStats] = useState<ChannelStats[]>([])
     const [filterMode, setFilterMode] = useState<FilterMode>('none')
     const [isLoading, setIsLoading] = useState(false)
+    const [isCreatingPlaylist, setIsCreatingPlaylist] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
     const handleSearch = async (query: string) => {
         setIsLoading(true)
@@ -69,11 +73,73 @@ export default function SearchPage() {
         setFilteredVideos(filtered)
     }, [videos, channelStats, filterMode])
 
+    // プレイリスト作成ハンドラー
+    const handleCreatePlaylist = async (selectedVideos: VideoInfo[]) => {
+        setIsCreatingPlaylist(true)
+        setError(null)
+        setSuccessMessage(null)
+
+        try {
+            const response = await fetch('/api/youtube/playlist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: `Playlist - ${new Date().toLocaleDateString('ja-JP')}`,
+                    description: `Created by YouTube Extract v2`,
+                    videoIds: selectedVideos.map(v => v.videoId),
+                }),
+            })
+
+            const data = await response.json()
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to create playlist')
+            }
+
+            setSuccessMessage(
+                `プレイリストを作成しました！ ${data.videosAdded}/${data.totalVideos} 件の動画を追加しました。`
+            )
+
+            // プレイリストURLを新しいタブで開く
+            if (data.playlistUrl) {
+                window.open(data.playlistUrl, '_blank')
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'プレイリストの作成に失敗しました')
+        } finally {
+            setIsCreatingPlaylist(false)
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-900">
             <div className="container mx-auto px-4 py-8">
                 {/* ヘッダー */}
                 <div className="text-center mb-8">
+                    <div className="flex justify-end mb-4">
+                        {session ? (
+                            <div className="flex items-center gap-4">
+                                <span className="text-sm text-gray-300">
+                                    {session.user?.email}
+                                </span>
+                                <button
+                                    onClick={() => signOut()}
+                                    className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                                >
+                                    ログアウト
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => signIn('google')}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                Googleでログイン
+                            </button>
+                        )}
+                    </div>
                     <h1 className="text-4xl font-bold text-white mb-2">
                         YouTube Extract v2
                     </h1>
@@ -91,6 +157,16 @@ export default function SearchPage() {
                 {videos.length > 0 && (
                     <div className="flex justify-center mb-8">
                         <FilterSettings currentMode={filterMode} onModeChange={setFilterMode} />
+                    </div>
+                )}
+
+                {/* 成功メッセージ */}
+                {successMessage && (
+                    <div className="max-w-4xl mx-auto mb-8 p-4 bg-green-900/30 border border-green-700 rounded-lg">
+                        <p className="text-green-200">
+                            <span className="font-semibold">成功: </span>
+                            {successMessage}
+                        </p>
                     </div>
                 )}
 
@@ -122,7 +198,11 @@ export default function SearchPage() {
                             </p>
                         </div>
                         <div className="flex justify-center">
-                            <VideoList videos={filteredVideos} />
+                            <VideoSelection
+                                videos={filteredVideos}
+                                onCreatePlaylist={handleCreatePlaylist}
+                                isCreatingPlaylist={isCreatingPlaylist}
+                            />
                         </div>
                     </>
                 )}

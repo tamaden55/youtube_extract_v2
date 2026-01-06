@@ -25,12 +25,15 @@ GitHub Issuesと連携して進捗を追跡します。
 **実装ブランチ**: `feature/phase2-filter`
 **次のステップ**: PRを作成して`dev`にマージ
 
-## Phase 3: プレイリスト作成機能 (#3)
-- [ ] NextAuth.jsセットアップ
-- [ ] Google OAuth Provider設定
-- [ ] 認証フロー実装
-- [ ] 動画選択UI
-- [ ] プレイリスト作成API (`/api/youtube/playlist`)
+## Phase 3: プレイリスト作成機能 (#3) ✅ 完了
+- [x] NextAuth.jsセットアップ
+- [x] Google OAuth Provider設定
+- [x] 認証フロー実装
+- [x] 動画選択UI
+- [x] プレイリスト作成API (`/api/youtube/playlist`)
+
+**実装ブランチ**: `feature/phase3-playlist`
+**次のステップ**: PRを作成して`dev`にマージ
 
 ## Phase 4: ホワイトリスト管理 (#4)
 - [ ] Supabaseセットアップ
